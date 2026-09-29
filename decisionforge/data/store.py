@@ -57,7 +57,10 @@ class DataStore:
         d = df.copy()
         d["week_start"] = pd.to_datetime(d["week_start"])
         self.df = d
-        self.con = duckdb.connect(":memory:")
+        try:
+            self.con = duckdb.connect(":memory:", config={"enable_external_access": False, "lock_configuration": True})
+        except Exception:
+            self.con = duckdb.connect(":memory:")
         self.con.register("_src", d.assign(week_start=d["week_start"].dt.date))
         self.con.execute(f"CREATE TABLE {self.TABLE} AS SELECT * FROM _src")
         self.con.unregister("_src")
