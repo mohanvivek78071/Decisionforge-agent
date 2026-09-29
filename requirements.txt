@@ -1,0 +1,5 @@
+duckdb>=1.0
+pandas>=2.0
+numpy>=1.24
+pydantic>=2.5
+pytest>=8

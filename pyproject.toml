@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "decisionforge"
+version = "0.1.0"
+description = "Verifiable multi-agent decision intelligence: plan, investigate, self-audit, recommend."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = ["duckdb>=1.0", "pandas>=2.0", "numpy>=1.24", "pydantic>=2.5"]
+
+[project.optional-dependencies]
+llm = ["anthropic>=0.40"]
+app = ["streamlit>=1.35"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+decisionforge = "decisionforge.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["decisionforge*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
