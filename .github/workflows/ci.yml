@@ -4,6 +4,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python: ["3.10", "3.11", "3.12"]
     steps:
@@ -12,6 +13,6 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install -e ".[dev]"
-      - run: pytest -q
+      - run: pytest -v
       - name: Agent eval gate (planted ground truth, must be 100%)
         run: python -m decisionforge eval

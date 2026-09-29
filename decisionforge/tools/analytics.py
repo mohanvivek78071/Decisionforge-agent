@@ -110,7 +110,7 @@ def compare_periods(store, a: CompareArgs):
     where = " AND ".join(["week_start >= $ps"] + conds)
     cur = _metric_expr(a.metric, "week_start >= $cs")
     pri = _metric_expr(a.metric, "week_start >= $ps AND week_start < $cs")
-    grp = store.query(f"SELECT {a.dimension} AS grp, {cur} AS cur, {pri} AS prior FROM sales WHERE {where} GROUP BY 1", params)
+    grp = store.query(f"SELECT {a.dimension} AS grp, {cur} AS cur, {pri} AS prior FROM sales WHERE {where} GROUP BY 1 ORDER BY 1", params)
     tot = store.query(f"SELECT {cur} AS cur, {pri} AS prior FROM sales WHERE {where}", params)
     if tot.empty or tot.iloc[0].isna().any():
         raise ToolError(f"no data for scope: {_scope(a.filters)}")
@@ -170,7 +170,7 @@ class AnomalyArgs(BaseModel):
 def detect_anomalies(store, a: AnomalyArgs):
     conds, params = _filters_sql(a.filters)
     where = " AND ".join(["TRUE"] + conds)
-    d = store.query(f"SELECT week_start, {a.dimension} AS grp, SUM({a.metric}) AS v FROM sales WHERE {where} GROUP BY 1, 2", params)
+    d = store.query(f"SELECT week_start, {a.dimension} AS grp, SUM({a.metric}) AS v FROM sales WHERE {where} GROUP BY 1, 2 ORDER BY 1, 2", params)
     if d.empty:
         raise ToolError(f"no data for scope: {_scope(a.filters)}")
     pv = d.pivot(index="week_start", columns="grp", values="v").fillna(0).sort_index()
@@ -292,7 +292,7 @@ def effect_estimate(store, a: EffectArgs):
             AVG(units) FILTER (WHERE promo_flag = 0) AS b,
             SUM(revenue) FILTER (WHERE promo_flag = 1) / NULLIF(SUM(units) FILTER (WHERE promo_flag = 1), 0) AS pp,
             SUM(revenue) FILTER (WHERE promo_flag = 0) / NULLIF(SUM(units) FILTER (WHERE promo_flag = 0), 0) AS bp
-            FROM sales WHERE {where} GROUP BY 1, 2, 3""",
+            FROM sales WHERE {where} GROUP BY 1, 2, 3 ORDER BY 3, 1, 2""",
         params,
     ).dropna()
     d = d[d["b"] > 0]
